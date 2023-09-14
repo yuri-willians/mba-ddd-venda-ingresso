@@ -47,12 +47,51 @@ export class EventSection extends Entity {
    }
 
    static create(command: EventSectionCreateCommand) {
-      return new EventSection({
+      const section = new EventSection({
          ...command,
          description: command.description ?? null,
          is_published: false,
          total_spots_reserved: 0
       });
+
+      section.initSpots();
+      return section;
+   }
+
+   private initSpots() {
+      for (let i = 0; i < this.total_spots; i++) {
+         this.spots.add(EventSpot.create());
+      }
+   }
+
+   changeName(name: string) {
+      this.name = name;
+   }
+
+   changeDescription(description: string) {
+      this.description = description;
+   }
+
+   changePrice(price: number) {
+      this.price = price;
+   }
+
+   publishAll() {
+      this.publish();
+      this.spots.forEach((spots) => spots.publish());
+   }
+
+   unPublishAll() {
+      this.unPublish();
+      this.spots.forEach((spots) => spots.unPublish());
+   }
+
+   publish() {
+      this.is_published = true;
+   }
+
+   unPublish() {
+      this.is_published = false;
    }
 
    toJSON() {

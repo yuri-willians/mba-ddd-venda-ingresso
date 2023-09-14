@@ -9,8 +9,15 @@ export type CreateEventCommand = {
    name: string;
    description?: string | null;
    date: Date;
-   partner_id: PartnerId;
+   partner_id: PartnerId | string;
 };
+
+export type AddSectionCommand = {
+   name: string;
+   description?: string | null;
+   total_spots: number;
+   price: number;
+}
 
 export type EventConstructorProps = {
    id?: EventId | string;
@@ -60,6 +67,42 @@ export class Event extends AggregateRoot {
          total_spots: 0,
          total_spots_reserved: 0
       });
+   }
+
+   changeName(name: string) {
+      this.name = name;
+   }
+
+   changeDescription(description: string | null) {
+      this.description = description;
+   }
+
+   changeDate(date: Date) {
+      this.date = date;
+   }
+
+   publishAll() {
+      this.publish();
+      this.sections.forEach((section) => section.publishAll());
+   }
+
+   unPublishAll() {
+      this.unPublish();
+      this.sections.forEach((section) => section.unPublishAll())
+   }
+
+   publish() {
+      this.is_published = true;
+   }
+
+   unPublish() {
+      this.is_published = false;
+   }
+
+   addSection(command: AddSectionCommand) {
+      const section = EventSection.create(command);
+      this.sections.add(section);
+      this.total_spots += section.total_spots;
    }
 
    toJSON() {
